@@ -1,0 +1,15 @@
+# One-click public URL on Render (free tier): New → Blueprint → point at this repo.
+# Set OPENROUTER_API_KEY in the Render dashboard (Environment) for real models;
+# without it the app runs on the offline mock provider.
+services:
+  - type: web
+    name: ascend-concierge-copilot
+    runtime: python
+    plan: free
+    buildCommand: pip install -e .
+    startCommand: uvicorn copilot.api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: COPILOT_PROVIDER
+        value: mock          # change to "openrouter" once the key is set below
+      - key: OPENROUTER_API_KEY
+        sync: false          # set this secret in the Render dashboard, not in code
