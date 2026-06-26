@@ -38,5 +38,60 @@
       "cash_price_usd": 2890, "points_price": 92000, "points_program": "SkyMiles",
       "points_cash_value_usd": 2530
     }
+  ],
+  "JFK-MIA": [
+    {
+      "carrier": "American Airlines", "carrier_code": "AA", "flight_no": "AA2419",
+      "depart": "07:30", "arrive": "10:40", "cabin": "business",
+      "duration_min": 190, "stops": 0,
+      "cash_price_usd": 1180, "points_price": 30000, "points_program": "AAdvantage",
+      "points_cash_value_usd": 690
+    },
+    {
+      "carrier": "Delta Air Lines", "carrier_code": "DL", "flight_no": "DL1543",
+      "depart": "08:15", "arrive": "11:25", "cabin": "business",
+      "duration_min": 190, "stops": 0,
+      "cash_price_usd": 1090, "points_price": 35000, "points_program": "SkyMiles",
+      "points_cash_value_usd": 770
+    },
+    {
+      "carrier": "American Airlines", "carrier_code": "AA", "flight_no": "AA1622",
+      "depart": "17:45", "arrive": "20:55", "cabin": "business",
+      "duration_min": 190, "stops": 0,
+      "cash_price_usd": 990, "points_price": 32000, "points_program": "AAdvantage",
+      "points_cash_value_usd": 720
+    }
+  ],
+  "JFK-CDG": [
+    {
+      "carrier": "Air France", "carrier_code": "AF", "flight_no": "AF009",
+      "depart": "19:30", "arrive": "08:55+1", "cabin": "business",
+      "duration_min": 445, "stops": 0,
+      "cash_price_usd": 4360, "points_price": 90000, "points_program": "Flying Blue",
+      "points_cash_value_usd": 2700
+    },
+    {
+      "carrier": "Delta Air Lines", "carrier_code": "DL", "flight_no": "DL264",
+      "depart": "21:00", "arrive": "10:20+1", "cabin": "business",
+      "duration_min": 440, "stops": 0,
+      "cash_price_usd": 4180, "points_price": 105000, "points_program": "SkyMiles",
+      "points_cash_value_usd": 3050
+    }
+  ],
+  "JFK-SFO": [
+    {
+      "carrier": "United Airlines", "carrier_code": "UA", "flight_no": "UA523",
+      "depart": "08:00", "arrive": "11:35", "cabin": "business",
+      "duration_min": 395, "stops": 0,
+      "cash_price_usd": 1650, "points_price": 60000, "points_program": "MileagePlus",
+      "points_cash_value_usd": 1100
+    },
+    {
+      "carrier": "Delta Air Lines", "carrier_code": "DL", "flight_no": "DL1768",
+      "depart": "07:15", "arrive": "10:50", "cabin": "business",
+      "duration_min": 395, "stops": 0,
+      "cash_price_usd": 1720, "points_price": 65000, "points_program": "SkyMiles",
+      "points_cash_value_usd": 1180
+    }
   ]
 }
