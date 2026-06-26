@@ -13,6 +13,7 @@ import json
 from copilot.config import Tier
 from copilot.gateway import ChatMessage, Gateway
 from copilot.guardrails.pii import redact
+from copilot.memory.base import MemberProfile
 from copilot.schemas import TripBrief
 
 _SYSTEM = """You extract a structured TripBrief from a traveler's free-text message.
@@ -22,6 +23,8 @@ Return ONLY a JSON object with these keys:
   passengers (int), preferences (list of strings), budget_flexible (bool),
   notes (string), missing_or_assumed (list of strings describing anything you guessed
   or could not determine — be honest here, do not invent specifics).
+If a member profile is provided, use it to fill gaps the message leaves implicit
+(e.g. home airport, usual cabin) and note in missing_or_assumed when you did so.
 Do not wrap the JSON in markdown."""
 
 
@@ -35,12 +38,18 @@ def _coerce_json(text: str) -> dict:
     return json.loads(text)
 
 
-async def extract_brief(message: str, gateway: Gateway) -> TripBrief:
+async def extract_brief(
+    message: str, gateway: Gateway, member: MemberProfile | None = None
+) -> TripBrief:
     # PII never reaches the model in the clear — redact before prompting.
     safe = redact(message)
+    user = safe
+    if member and (hint := member.as_hint()):
+        # Customer intelligence: prime the model with what we already know.
+        user = f"Member profile: {hint}.\n\nMessage: {safe}"
     result = await gateway.chat(
         Tier.CHEAP,
-        [ChatMessage("system", _SYSTEM), ChatMessage("user", safe)],
+        [ChatMessage("system", _SYSTEM), ChatMessage("user", user)],
         stage="extract",
         json_mode=True,
         temperature=0.0,

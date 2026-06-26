@@ -56,9 +56,34 @@ class MockProvider:
     # ── canned generators ────────────────────────────────────────────────────
     def _mock_extract(self, user: str) -> str:
         u = user.lower()
-        origin = "JFK" if any(c in u for c in ("nyc", "new york", "jfk")) else "EZE"
+        has_profile = "member profile" in u
+        assumed = ["exact dates not specified — confirm with member"]
+
+        # Origin: from the message, else fall back to the member's home airport.
+        if any(c in u for c in ("nyc", "new york", "jfk")):
+            origin = "JFK"
+        elif "buenos aires" in u or "eze" in u:
+            origin = "EZE"
+        elif has_profile and "departs from jfk" in u:
+            origin, _ = "JFK", assumed.append("origin inferred from member's home airport")
+        else:
+            origin = "EZE"
+
         dest = "LHR" if any(c in u for c in ("london", "lhr", "londres")) else "MIA"
-        cabin = "business" if "business" in u else ("first" if "first" in u else "economy")
+
+        # Cabin: from the message, else the member's usual cabin.
+        if "business" in u and "prefers business" not in u:
+            cabin = "business"
+        elif "first" in u:
+            cabin = "first"
+        elif has_profile and "prefers business" in u:
+            cabin, _ = "business", assumed.append("cabin inferred from member preference")
+        elif has_profile and "prefers first" in u:
+            cabin = "first"
+        else:
+            cabin = "economy"
+
+        pax = 2 if any(w in u for w in ("two of us", "two ", "2 ", "dos ")) else 1
         return json.dumps(
             {
                 "origin": origin,
@@ -66,11 +91,11 @@ class MockProvider:
                 "depart_date": None,
                 "return_date": None,
                 "cabin": cabin,
-                "passengers": 1,
+                "passengers": pax,
                 "preferences": ["morning arrival"] if "morning" in u or "mañana" in u else [],
                 "budget_flexible": "flexible" in u,
                 "notes": "",
-                "missing_or_assumed": ["exact dates not specified — confirm with member"],
+                "missing_or_assumed": assumed,
             }
         )
 

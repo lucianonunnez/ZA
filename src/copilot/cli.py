@@ -22,10 +22,12 @@ console = Console()
 
 
 @app.command()
-def quote(request: str) -> None:
+def quote(request: str, member: str = typer.Option(None, help="Member handle for customer intelligence")) -> None:
     """Turn a free-text traveler request into a concierge recommendation."""
-    result = asyncio.run(run_concierge(request))
+    result = asyncio.run(run_concierge(request, member_handle=member))
     brief, rec, trace = result.brief, result.recommendation, result.trace
+    if result.member and (hint := result.member.as_hint()):
+        console.print(f"[dim]Member intelligence applied: {hint}[/dim]")
 
     console.print(Panel.fit(
         f"[bold]{brief.origin} → {brief.destination}[/bold]  ·  {brief.cabin.value}  ·  "
@@ -123,6 +125,36 @@ def monitor(
     console.print(Panel("\n".join(body), title=f"🛰  Proactive monitor · {flight_no} → {to}", border_style=color))
     if alert.member_message:
         console.print(Panel(alert.member_message, title="📱 Proactive message to member", border_style=color))
+
+
+@app.command()
+def member(
+    handle: str,
+    learn_trip: str = typer.Option(None, "--learn", help="Record a trip: ORIGIN,DEST,CARRIER,CABIN e.g. JFK,LHR,BA,business"),
+) -> None:
+    """Show or teach a member profile (the customer-intelligence store)."""
+    from copilot.memory import default_store
+    from copilot.memory.base import TripOutcome
+    from copilot.schemas import Cabin
+
+    store = default_store()
+    if learn_trip:
+        o, d, c, cab = (x.strip() for x in learn_trip.split(","))
+        prof = store.record_trip(handle, TripOutcome(
+            origin=o, destination=d, carrier_code=c, cabin=Cabin(cab)))
+        console.print(f"[green]Learned.[/green] {handle} now: [bold]{prof.as_hint()}[/bold]  ({prof.trips_count} trips)")
+        return
+
+    prof = store.get(handle)
+    if not prof:
+        console.print(f"[yellow]No profile for '{handle}'.[/yellow] Teach it with --learn JFK,LHR,BA,business")
+        return
+    console.print(Panel(
+        f"Name: {prof.name or handle}\nTrips: {prof.trips_count}\n"
+        f"Home: {prof.home_airport}\nCabin: {prof.preferred_cabin.value if prof.preferred_cabin else '—'}\n"
+        f"Carriers: {', '.join(prof.preferred_carriers) or '—'}\n"
+        f"Loyalty: {', '.join(prof.loyalty_programs) or '—'}",
+        title=f"👤 Member · {handle}", border_style="cyan"))
 
 
 @app.command()
