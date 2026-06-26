@@ -21,3 +21,7 @@ secrets/
 traces/
 *.log
 .DS_Store
+
+# Local databases / member store (never commit member data)
+*.sqlite3
+member_memory.json
