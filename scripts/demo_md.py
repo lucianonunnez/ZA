@@ -21,7 +21,7 @@ from copilot.pipeline import run_concierge  # noqa: E402
 def to_markdown(result) -> str:
     b, rec, t = result.brief, result.recommendation, result.trace
     out = [
-        f"## ✈️ Concierge quote — {b.origin} → {b.destination}",
+        f"## Concierge quote — {b.origin} → {b.destination}",
         f"**Cabin:** {b.cabin.value} · **Pax:** {b.passengers}"
         + ("  ·  _budget flexible_" if b.budget_flexible else ""),
     ]

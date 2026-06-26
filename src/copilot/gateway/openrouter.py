@@ -41,8 +41,8 @@ class OpenRouterProvider:
 
         headers = {
             "Authorization": f"Bearer {self._key}",
-            "HTTP-Referer": "https://github.com/ascend/concierge-copilot",
-            "X-Title": "Ascend Concierge Copilot",
+            "HTTP-Referer": "https://github.com/lucianonunnez/ZA",
+            "X-Title": "Concierge Copilot",
         }
 
         async with httpx.AsyncClient(timeout=self._timeout) as client:
