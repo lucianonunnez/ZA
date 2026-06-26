@@ -45,6 +45,24 @@ as a repo Secret (never in code or chat).
 Locally it's the same commands (`uvicorn copilot.api:app` → http://localhost:8000);
 nothing is cloud-only.
 
+## Telegram bot — the concierge on a real chat channel
+
+The concierge model is chat-first (Ascend uses WhatsApp). The same pipeline is
+exposed on Telegram, so you can message it from your phone and get a quote with
+real disruption risk back. Each Telegram user is treated as a member, so the
+customer-intelligence layer personalizes their next quote.
+
+```bash
+# 1. Create a bot with @BotFather on Telegram → copy the token
+export TELEGRAM_BOT_TOKEN=...
+export COPILOT_FLIGHT_SOURCE=opensky   # real flights for any route
+python -m copilot.telegram_bot         # long-polling, no public URL needed
+# 2. Message your bot: "NYC to London next Thursday, business, morning arrival"
+```
+
+Dependency-light (raw Bot API over httpx long-polling) and reuses the exact
+pipeline — nothing duplicated.
+
 ## Stack (every choice maps to a need, nothing for its own sake)
 
 **Polyglot by plane** — the senior decision that ties it together:
