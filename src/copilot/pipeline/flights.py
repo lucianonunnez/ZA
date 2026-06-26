@@ -8,6 +8,8 @@ literal bonus point in the JD, so the seam is deliberately clean.
 
 from __future__ import annotations
 
+import os
+
 from copilot.data import airports, sample_flights
 from copilot.schemas import Cabin, FlightOption, TripBrief
 
@@ -26,6 +28,22 @@ def _to_iata(value: str) -> str:
     if v.upper() in airports():
         return v.upper()
     return _CITY_TO_IATA.get(v.lower(), v.upper())
+
+
+async def search_flights_async(brief: TripBrief) -> list[FlightOption]:
+    """Live source first (Playwright scraper, if enabled), else bundled inventory.
+
+    Set COPILOT_FLIGHT_SOURCE=scrape to try the browser scraper; it falls back to
+    inventory automatically when Playwright/network is unavailable.
+    """
+    if os.getenv("COPILOT_FLIGHT_SOURCE") == "scrape":
+        from copilot.pipeline.scraper import ScraperFlightSource
+
+        scraped = await ScraperFlightSource().search(brief)
+        if scraped:
+            scraped.sort(key=lambda o: (-(o.savings_pct or 0), o.cash_price_usd))
+            return scraped
+    return search_flights(brief)
 
 
 def search_flights(brief: TripBrief) -> list[FlightOption]:

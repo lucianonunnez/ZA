@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from copilot.gateway import Gateway
 from copilot.memory.base import MemberProfile, MemoryStore
 from copilot.pipeline.extract import extract_brief
-from copilot.pipeline.flights import search_flights
+from copilot.pipeline.flights import search_flights_async
 from copilot.pipeline.recommend import recommend
 from copilot.pipeline.risk import assess_risk
 from copilot.schemas import Recommendation, ScoredOption, TripBrief
@@ -46,7 +46,7 @@ async def run_concierge(
         member = (store or default_store()).get(member_handle)
 
     brief = await extract_brief(message, gw, member=member)
-    flights = search_flights(brief)
+    flights = await search_flights_async(brief)
 
     risks = await asyncio.gather(*(assess_risk(f, gw) for f in flights))
     scored = [ScoredOption(flight=f, risk=r) for f, r in zip(flights, risks)]
