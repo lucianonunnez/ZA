@@ -1,0 +1,49 @@
+name: Telegram bot (live session)
+
+# Run the concierge Telegram bot from GitHub for a bounded session — handy for a
+# live demo with no server. Click "Run workflow", chat your bot from your phone,
+# and it stays live for the chosen number of minutes, then stops.
+#
+# Requires the TELEGRAM_BOT_TOKEN secret (from @BotFather). OPENROUTER_API_KEY is
+# optional (real LLM replies); without it the bot runs on the offline mock.
+#
+# Note: only ONE long-polling instance can run at a time — don't also run it in a
+# Codespace simultaneously (Telegram returns 409 Conflict otherwise).
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "How long to keep the bot live (max ~55)"
+        required: false
+        default: "50"
+      provider:
+        description: "Model provider (openrouter needs the OPENROUTER_API_KEY secret)"
+        type: choice
+        options: [openrouter, mock]
+        default: openrouter
+
+permissions:
+  contents: read
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e .
+      - name: Run the bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          COPILOT_PROVIDER: ${{ inputs.provider }}
+          COPILOT_FLIGHT_SOURCE: opensky
+        run: |
+          echo "Bot live for ${{ inputs.minutes }} minutes — message it on Telegram now."
+          # `timeout` stops the long-poll loop cleanly; exit 124 is expected.
+          timeout ${{ inputs.minutes }}m python -m copilot.telegram_bot || true
