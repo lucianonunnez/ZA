@@ -14,10 +14,16 @@ from functools import cache
 from copilot.data import airports, sample_flights
 from copilot.schemas import Cabin, FlightOption, TripBrief
 
-# A few aliases the airport data's city field doesn't cover verbatim.
+# Common abbreviations / nicknames the airport data's city field doesn't cover.
 _CITY_ALIASES = {
-    "nyc": "JFK", "new york city": "JFK", "londres": "LHR",
-    "sao paulo": "GRU", "são paulo": "GRU", "saint petersburg": "LED",
+    "nyc": "JFK", "new york city": "JFK",
+    "la": "LAX", "l.a.": "LAX", "los angeles": "LAX",
+    "sf": "SFO", "san fran": "SFO",
+    "dc": "IAD", "d.c.": "IAD", "washington dc": "IAD",
+    "londres": "LHR",
+    "bsas": "EZE", "baires": "EZE",
+    "rio": "GIG", "cdmx": "MEX", "mexico df": "MEX",
+    "sao paulo": "GRU", "são paulo": "GRU",
 }
 
 
