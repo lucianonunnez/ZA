@@ -50,7 +50,8 @@ class OpenRouterProvider:
             resp.raise_for_status()
             data = resp.json()
 
-        text = data["choices"][0]["message"]["content"]
+        # Some models return content=null on short/empty completions — coerce to "".
+        text = data["choices"][0]["message"].get("content") or ""
         usage = data.get("usage", {})
         in_tokens = usage.get("prompt_tokens", 0)
         out_tokens = usage.get("completion_tokens", 0)

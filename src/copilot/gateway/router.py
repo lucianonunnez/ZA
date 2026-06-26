@@ -91,6 +91,10 @@ class Gateway:
                 last_err = exc
                 continue
 
+            # Defense in depth: never let a provider's null/None content reach a
+            # caller that does .strip()/json.loads(). A real model surfaced this;
+            # the mock never could. Guard at the single gateway chokepoint.
+            text = text or ""
             latency_ms = (time.perf_counter() - t0) * 1000
             cost = spec.cost(in_tok, out_tok)
             fell_back = chain[0] if i > 0 else None
