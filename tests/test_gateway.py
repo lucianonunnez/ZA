@@ -30,6 +30,19 @@ async def test_fallback_when_primary_provider_errors():
         await gw.chat(Tier.CHEAP, [ChatMessage("system", "x"), ChatMessage("user", "y")])
 
 
+async def test_none_content_is_coerced_to_empty_string():
+    """A real model once returned content=None; the gateway must not pass that on
+    to callers that do .strip()/json.loads()."""
+    class NoneTextProvider:
+        name = "nonetext"
+        async def complete(self, **kw):
+            return None, 1, 1, {}
+
+    gw = Gateway(provider=NoneTextProvider())
+    res = await gw.chat(Tier.CHEAP, [ChatMessage("system", "x"), ChatMessage("user", "y")])
+    assert res.text == ""
+
+
 async def test_cost_accumulates():
     gw = Gateway()
     for _ in range(3):
