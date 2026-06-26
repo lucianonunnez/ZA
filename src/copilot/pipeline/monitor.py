@@ -1,4 +1,4 @@
-"""Post-purchase proactive monitoring — the heart of Ascend's model.
+"""Post-purchase proactive monitoring — the heart of the concierge model.
 
 The member has already booked. Now the system *watches* the flight and decides,
 proactively, whether to reach out. It fuses everything we discussed:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Django management entrypoint for the Ascend concierge CRM control plane."""
+"""Django management entrypoint for the concierge CRM control plane."""
 
 import os
 import sys

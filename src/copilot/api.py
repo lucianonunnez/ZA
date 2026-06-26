@@ -18,7 +18,7 @@ from copilot.config import settings
 from copilot.pipeline import run_concierge
 from copilot.schemas import Recommendation, TripBrief
 
-app = FastAPI(title="Ascend Concierge Copilot", version="0.1.0")
+app = FastAPI(title="Concierge Copilot", version="0.1.0")
 
 
 class QuoteRequest(BaseModel):
@@ -58,7 +58,7 @@ _INDEX_HTML = """<!doctype html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ascend Concierge Copilot</title>
+<title>Concierge Copilot</title>
 <style>
   :root { color-scheme: dark; }
   body { font-family: -apple-system, system-ui, sans-serif; background:#0b0e14; color:#e6e6e6;
@@ -87,7 +87,7 @@ _INDEX_HTML = """<!doctype html>
 </head>
 <body>
 <div class="wrap">
-  <h1>✈️ Ascend Concierge Copilot</h1>
+  <h1>Concierge Copilot</h1>
   <p class="sub">A messy traveler request → a quoted, risk-scored, points-optimized recommendation.</p>
   <textarea id="req" rows="3">I need NYC to London next Thursday, business class, prefer a morning arrival, budget is flexible</textarea>
   <div class="row">

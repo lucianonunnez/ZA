@@ -1,4 +1,4 @@
-# Ascend Concierge Copilot
+# Concierge Copilot
 
 > A working slice of an AI-native travel concierge: it turns a messy WhatsApp-style
 > traveler request into a quoted, **disruption-risk-scored**, points-optimized,
@@ -16,7 +16,7 @@ copilot quote "I need NYC to London next Thursday, business, morning arrival, fl
 copilot member vip1 --learn JFK,LHR,BA,business   # teach the member CRM
 copilot quote "two of us to London thursday" --member vip1   # 2nd quote uses memory
 copilot watch   AA100              # live status + inbound-aircraft tracking
-copilot monitor AA100 --to LHR     # post-purchase proactive alert (the Ascend loop)
+copilot monitor AA100 --to LHR     # post-purchase proactive alert (the proactive loop)
 copilot models                     # registry + active provider
 python evals/run_evals.py          # multi-model scorecard
 pytest -q                          # 25 tests, all offline
@@ -143,7 +143,7 @@ booked flight (number + date)
 `copilot monitor AA100 --to LHR` → if the inbound aircraft is running an hour
 late, it raises a **CRITICAL** alert and drafts: *"Heads-up — I'm watching your
 flight and the inbound aircraft is running about an hour behind… I'm already
-holding an earlier alternative."* That is Ascend's "proactive handling of
+holding an earlier alternative."* That is the "proactive handling of
 disruptions," automated.
 
 **Why this is mostly free:** [OpenSky](https://opensky-network.org/data/api) gives

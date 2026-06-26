@@ -16,7 +16,7 @@ from rich.table import Table
 from copilot.config import MODELS, TIER_DEFAULTS, settings
 from copilot.pipeline import run_concierge
 
-app = typer.Typer(add_completion=False, help="Ascend Concierge Copilot")
+app = typer.Typer(add_completion=False, help="Concierge Copilot")
 console = Console()
 
 
@@ -97,7 +97,7 @@ def watch(flight_no: str, date: str = typer.Option(None, help="YYYY-MM-DD (optio
     override = live_risk_override(status)
     if override:
         lines.append(f"\n[bold]Live risk override:[/bold] {override[0]:.0f}/100 — {'; '.join(override[1])}")
-    console.print(Panel("\n".join(lines), title=f"✈ Live watch · {flight_no}", border_style=color))
+    console.print(Panel("\n".join(lines), title=f"Live watch · {flight_no}", border_style=color))
 
 
 @app.command()
@@ -109,7 +109,7 @@ def monitor(
     """Post-purchase proactive watch: fuses live delay + weather into an alert.
 
     The member already booked. This decides whether to proactively reach out, and
-    drafts the concierge message. The Ascend 'proactive disruption handling' loop.
+    drafts the concierge message. The proactive disruption-handling loop.
     """
     from copilot.pipeline.monitor import monitor_booking
 

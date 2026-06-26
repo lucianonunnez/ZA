@@ -1,5 +1,5 @@
 {
-  "name": "Ascend Concierge Copilot",
+  "name": "Concierge Copilot",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
   "postCreateCommand": "pip install -e '.[dev,mcp]'",
   "customizations": {

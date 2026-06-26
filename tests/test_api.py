@@ -10,7 +10,7 @@ client = TestClient(app)
 def test_index_serves_web_ui():
     r = client.get("/")
     assert r.status_code == 200
-    assert "Ascend Concierge Copilot" in r.text
+    assert "Concierge Copilot" in r.text
     assert "Get recommendation" in r.text
 
 
