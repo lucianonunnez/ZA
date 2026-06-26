@@ -18,7 +18,7 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Secret from env; a dev-only default keeps `migrate` working out of the box.
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-insecure-change-me")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-insecure-change-me")  # gitleaks:allow (dev placeholder, real key from env)
 DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
 

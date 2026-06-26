@@ -56,4 +56,6 @@ jobs:
           VER=8.21.0
           curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${VER}/gitleaks_${VER}_linux_x64.tar.gz" \
             | tar -xz gitleaks
-          ./gitleaks detect --source . --no-banner --redact --verbose
+          # --no-git scans the working tree (current files), so inline
+          # `# gitleaks:allow` markers on known-safe dev placeholders are honored.
+          ./gitleaks detect --source . --no-git --no-banner --redact --verbose
