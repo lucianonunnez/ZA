@@ -22,6 +22,24 @@ python evals/run_evals.py          # multi-model scorecard
 pytest -q                          # 25 tests, all offline
 ```
 
+## Run it in the cloud (no local install)
+
+Built to run **without touching your machine** — handy under corporate restrictions.
+GitHub's runners have open internet, so even real models work, with the key kept
+as a repo Secret (never in code or chat).
+
+1. **Add the key once (optional, for real models):** repo → Settings → Secrets and
+   variables → Actions → New repository secret → `OPENROUTER_API_KEY`.
+2. **Demo a quote:** Actions → **Demo — concierge quote** → *Run workflow* → type a
+   request (pick `openrouter` if you added the key). The recommendation renders in
+   the run summary.
+3. **Run the arena:** Actions → **Eval arena — model scorecard** → *Run workflow*.
+   The multi-model leaderboard renders in the run summary (and runs weekly).
+4. **Interactive shell, in the browser:** Code → **Codespaces** → *Create* — a full
+   environment (devcontainer) where `copilot quote/watch/monitor` just work.
+
+Locally it's the same commands; nothing is cloud-only.
+
 ## Stack (every choice maps to a need, nothing for its own sake)
 
 **Polyglot by plane** — the senior decision that ties it together:

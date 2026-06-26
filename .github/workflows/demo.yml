@@ -1,0 +1,43 @@
+name: Demo — concierge quote
+
+# Run the concierge in the cloud, no local install. Click "Run workflow",
+# type a request, and the result renders in the run summary.
+# The OpenRouter key (if used) lives in repo Secrets, never in code or chat.
+
+on:
+  workflow_dispatch:
+    inputs:
+      request:
+        description: "Traveler request (free text)"
+        required: true
+        default: "I need NYC to London next Thursday, business, morning arrival, flexible budget"
+      member:
+        description: "Member handle (optional — customer intelligence)"
+        required: false
+        default: ""
+      provider:
+        description: "Model provider (openrouter needs the OPENROUTER_API_KEY secret)"
+        type: choice
+        options: [mock, openrouter]
+        default: mock
+
+permissions:
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e .
+      - name: Run quote
+        env:
+          COPILOT_PROVIDER: ${{ inputs.provider }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          DEMO_REQUEST: ${{ inputs.request }}
+          DEMO_MEMBER: ${{ inputs.member }}
+        run: python scripts/demo_md.py

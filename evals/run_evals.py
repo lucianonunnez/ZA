@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -114,6 +115,24 @@ async def main(models: list[str]) -> None:
         "\n[dim]Note: with no API key this runs on the mock provider, so numbers are "
         "illustrative. Add OPENROUTER_API_KEY + COPILOT_PROVIDER=openrouter for real ones.[/dim]"
     )
+
+    # When running in GitHub Actions, render the scorecard into the run summary —
+    # the "arena" leaderboard, visible right in the workflow page.
+    summary = os.getenv("GITHUB_STEP_SUMMARY")
+    if summary:
+        lines = [
+            "## 🏟️ Model scorecard (extraction tier)",
+            "",
+            "| Model | Field acc % | Judge /10 | Cost $ | Latency ms/case |",
+            "|---|--:|--:|--:|--:|",
+        ]
+        for r in rows:
+            lines.append(
+                f"| `{r['model']}` | {r['field_accuracy']} | {r['judge_avg']} | "
+                f"{r['cost_usd']:.4f} | {r['latency_ms']} |"
+            )
+        with open(summary, "a") as fh:
+            fh.write("\n".join(lines) + "\n")
 
 
 if __name__ == "__main__":
