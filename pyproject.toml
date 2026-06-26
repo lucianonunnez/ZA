@@ -23,6 +23,7 @@ dev = [
 ]
 mcp = ["mcp>=1.2"]
 scrape = ["playwright>=1.44"]
+flights = ["fast-flights>=2.2"]   # real Google Flights prices, no API key
 
 [project.scripts]
 copilot = "copilot.cli:app"

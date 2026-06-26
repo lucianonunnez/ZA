@@ -9,6 +9,6 @@
   },
   "remoteEnv": {
     "COPILOT_PROVIDER": "mock",
-    "COPILOT_FLIGHT_SOURCE": "opensky"
+    "COPILOT_FLIGHT_SOURCE": "auto"
   }
 }

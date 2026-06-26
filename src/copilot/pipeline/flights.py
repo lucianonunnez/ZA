@@ -45,39 +45,66 @@ def _rank(options: list[FlightOption]) -> list[FlightOption]:
     return options
 
 
-async def search_flights_async(brief: TripBrief) -> list[FlightOption]:
-    """Real flight search for any route when configured, else bundled inventory.
+def _source_chain(mode: str, settings) -> list[str]:
+    """Which real sources to try, in order, given the COPILOT_FLIGHT_SOURCE switch.
 
-    Order: Amadeus (if creds) → OpenSky (real flights, any route, free, no key —
-    when COPILOT_FLIGHT_SOURCE=opensky) → Playwright scraper (if =scrape) →
-    bundled offline inventory. Each step falls back on empty/failure, so the
-    pipeline always returns *something* and never crashes.
+    "auto" cascades through every available real source (best data first);
+    a specific value forces just that one; "" stays offline (inventory/synthetic).
+    Amadeus always leads when its creds are set.
+    """
+    chain: list[str] = []
+    if settings.amadeus_enabled:
+        chain.append("amadeus")
+    if mode in ("auto", "travelpayouts") and settings.travelpayouts_enabled:
+        chain.append("travelpayouts")
+    if mode in ("auto", "fastflights"):
+        chain.append("fastflights")
+    if mode in ("auto", "opensky"):
+        chain.append("opensky")
+    if mode == "scrape":
+        chain.append("scrape")
+    return chain
+
+
+async def _run_source(key: str, brief: TripBrief, origin: str, dest: str, settings) -> list:
+    if key == "amadeus":
+        from copilot.pipeline.amadeus import AmadeusFlightSource
+        return await AmadeusFlightSource(settings).search(brief, origin, dest)
+    if key == "travelpayouts":
+        from copilot.pipeline.travelpayouts import TravelpayoutsFlightSource
+        return await TravelpayoutsFlightSource(settings).search(brief, origin, dest)
+    if key == "fastflights":
+        from copilot.pipeline.fastflights_source import FastFlightsSource
+        return await FastFlightsSource().search(brief, origin, dest)
+    if key == "opensky":
+        from copilot.pipeline.opensky_source import OpenSkyFlightSource
+        return await OpenSkyFlightSource().search(brief, origin, dest)
+    if key == "scrape":
+        from copilot.pipeline.scraper import ScraperFlightSource
+        return await ScraperFlightSource().search(brief)
+    return []
+
+
+async def search_flights_async(brief: TripBrief) -> list[FlightOption]:
+    """Cascade real flight sources (a switch), then inventory, then synthetic.
+
+    COPILOT_FLIGHT_SOURCE: "auto" tries every available real source in priority
+    order (Amadeus → Travelpayouts → fast-flights → OpenSky); a specific value
+    forces one; unset stays offline. Whatever a source can't cover falls through,
+    so a known city pair never comes back empty — and nothing ever crashes.
     """
     from copilot.config import settings
 
     origin, dest = _to_iata(brief.origin), _to_iata(brief.destination)
-    source = os.getenv("COPILOT_FLIGHT_SOURCE", "")
+    mode = os.getenv("COPILOT_FLIGHT_SOURCE", "").lower()
 
-    if settings.amadeus_enabled:
-        from copilot.pipeline.amadeus import AmadeusFlightSource
-
-        real = await AmadeusFlightSource(settings).search(brief, origin, dest)
+    for key in _source_chain(mode, settings):
+        try:
+            real = await _run_source(key, brief, origin, dest, settings)
+        except Exception:
+            real = []
         if real:
             return _rank(real)
-
-    if source == "opensky":
-        from copilot.pipeline.opensky_source import OpenSkyFlightSource
-
-        live = await OpenSkyFlightSource().search(brief, origin, dest)
-        if live:
-            return _rank(live)
-
-    if source == "scrape":
-        from copilot.pipeline.scraper import ScraperFlightSource
-
-        scraped = await ScraperFlightSource().search(brief)
-        if scraped:
-            return _rank(scraped)
 
     # Curated inventory (hand-tuned points arbitrage) for the routes we have it on.
     inventory = search_flights(brief)
