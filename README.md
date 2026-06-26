@@ -36,9 +36,14 @@ as a repo Secret (never in code or chat).
 3. **Run the arena:** Actions → **Eval arena — model scorecard** → *Run workflow*.
    The multi-model leaderboard renders in the run summary (and runs weekly).
 4. **Interactive shell, in the browser:** Code → **Codespaces** → *Create* — a full
-   environment (devcontainer) where `copilot quote/watch/monitor` just work.
+   environment (devcontainer) where `copilot quote/watch/monitor` just work. Run
+   `uvicorn copilot.api:app --host 0.0.0.0 --port 8000` and open the forwarded port
+   to use the **web UI** (a form → live recommendation) in your browser.
+5. **Public URL (optional):** Render → New → Blueprint → this repo (`render.yaml`).
+   Sets up `uvicorn copilot.api:app`; add `OPENROUTER_API_KEY` in the dashboard.
 
-Locally it's the same commands; nothing is cloud-only.
+Locally it's the same commands (`uvicorn copilot.api:app` → http://localhost:8000);
+nothing is cloud-only.
 
 ## Stack (every choice maps to a need, nothing for its own sake)
 
