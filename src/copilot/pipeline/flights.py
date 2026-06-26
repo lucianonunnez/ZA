@@ -30,19 +30,37 @@ def _to_iata(value: str) -> str:
     return _CITY_TO_IATA.get(v.lower(), v.upper())
 
 
-async def search_flights_async(brief: TripBrief) -> list[FlightOption]:
-    """Live source first (Playwright scraper, if enabled), else bundled inventory.
+def _rank(options: list[FlightOption]) -> list[FlightOption]:
+    # Best points-arbitrage first, then cheapest cash (points may be absent).
+    options.sort(key=lambda o: (-(o.savings_pct or 0), o.cash_price_usd))
+    return options
 
-    Set COPILOT_FLIGHT_SOURCE=scrape to try the browser scraper; it falls back to
-    inventory automatically when Playwright/network is unavailable.
+
+async def search_flights_async(brief: TripBrief) -> list[FlightOption]:
+    """Real flight search for any route when configured, else bundled inventory.
+
+    Order: Amadeus (real, any route — if creds set) → Playwright scraper (if
+    enabled) → bundled offline inventory. Each step falls back on empty/failure,
+    so the pipeline always returns *something* and never crashes.
     """
+    from copilot.config import settings
+
+    origin, dest = _to_iata(brief.origin), _to_iata(brief.destination)
+
+    if settings.amadeus_enabled:
+        from copilot.pipeline.amadeus import AmadeusFlightSource
+
+        real = await AmadeusFlightSource(settings).search(brief, origin, dest)
+        if real:
+            return _rank(real)
+
     if os.getenv("COPILOT_FLIGHT_SOURCE") == "scrape":
         from copilot.pipeline.scraper import ScraperFlightSource
 
         scraped = await ScraperFlightSource().search(brief)
         if scraped:
-            scraped.sort(key=lambda o: (-(o.savings_pct or 0), o.cash_price_usd))
-            return scraped
+            return _rank(scraped)
+
     return search_flights(brief)
 
 

@@ -38,6 +38,9 @@ jobs:
         env:
           COPILOT_PROVIDER: ${{ inputs.provider }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          # Real flight search for any route (set these secrets to enable Amadeus).
+          AMADEUS_CLIENT_ID: ${{ secrets.AMADEUS_CLIENT_ID }}
+          AMADEUS_CLIENT_SECRET: ${{ secrets.AMADEUS_CLIENT_SECRET }}
           DEMO_REQUEST: ${{ inputs.request }}
           DEMO_MEMBER: ${{ inputs.member }}
         run: python scripts/demo_md.py

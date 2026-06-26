@@ -166,6 +166,7 @@ OpenRouter key and set `COPILOT_PROVIDER=openrouter` to route to real models
 | `OPENROUTER_API_KEY` | one key, many labs |
 | `COPILOT_BUDGET_USD` | hard ceiling on spend per process |
 | `AERODATABOX_API_KEY` | optional — live flight status + aircraft reg for `monitor`/`watch` |
+| `AMADEUS_CLIENT_ID` / `AMADEUS_CLIENT_SECRET` | optional — real flight search for **any** route (Amadeus free tier); falls back to bundled inventory without them |
 
 ## Layout
 
@@ -195,8 +196,9 @@ tests/                 25 tests, all offline
   alert levels, live-override scoring, the concierge message — is real; the
   AeroDataBox + OpenSky adapters in `live.py` activate with a key/network and fall
   back to a deterministic demo offline.
-- **Stubbed behind a clean seam:** live flight inventory (offline dataset; drop in
-  Amadeus/Kiwi or a Playwright scraper in `flights.py`) and live weather
-  (Open-Meteo adapter present in `weather.py`, falls back to a heuristic offline).
+- **Real with a key:** flight search via **Amadeus Self-Service** (`pipeline/amadeus.py`)
+  for any route when `AMADEUS_*` is set; live weather via Open-Meteo for ~55 bundled
+  airports. Both fall back gracefully (bundled inventory / heuristic) without keys or
+  network, so the demo runs anywhere.
 - **Why:** the demo must run anywhere with zero secrets. The seams are where
   production integrations plug in without touching the rest.
