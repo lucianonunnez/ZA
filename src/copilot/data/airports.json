@@ -1,0 +1,12 @@
+{
+  "JFK": {"name": "New York JFK", "city": "New York", "lat": 40.6413, "lon": -73.7781},
+  "EWR": {"name": "Newark Liberty", "city": "New York", "lat": 40.6895, "lon": -74.1745},
+  "LHR": {"name": "London Heathrow", "city": "London", "lat": 51.4700, "lon": -0.4543},
+  "LGW": {"name": "London Gatwick", "city": "London", "lat": 51.1537, "lon": -0.1821},
+  "EZE": {"name": "Buenos Aires Ezeiza", "city": "Buenos Aires", "lat": -34.8222, "lon": -58.5358},
+  "MIA": {"name": "Miami Intl", "city": "Miami", "lat": 25.7959, "lon": -80.2870},
+  "SFO": {"name": "San Francisco Intl", "city": "San Francisco", "lat": 37.6213, "lon": -122.3790},
+  "CDG": {"name": "Paris Charles de Gaulle", "city": "Paris", "lat": 49.0097, "lon": 2.5479},
+  "DXB": {"name": "Dubai Intl", "city": "Dubai", "lat": 25.2532, "lon": 55.3657},
+  "SIN": {"name": "Singapore Changi", "city": "Singapore", "lat": 1.3644, "lon": 103.9915}
+}

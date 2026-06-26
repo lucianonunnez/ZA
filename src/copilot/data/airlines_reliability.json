@@ -1,0 +1,11 @@
+{
+  "_source": "Illustrative carrier on-time / cancellation rates in the style of U.S. DOT BTS Air Travel Consumer Reports. Static snapshot bundled so disruption risk is computable offline; swap for a live BTS pull in production.",
+  "BA": {"name": "British Airways", "on_time_pct": 78.4, "cancel_pct": 1.9, "mishandled_bags_per_1k": 6.1},
+  "AA": {"name": "American Airlines", "on_time_pct": 76.2, "cancel_pct": 2.4, "mishandled_bags_per_1k": 6.8},
+  "DL": {"name": "Delta Air Lines", "on_time_pct": 83.1, "cancel_pct": 1.1, "mishandled_bags_per_1k": 4.2},
+  "UA": {"name": "United Airlines", "on_time_pct": 79.6, "cancel_pct": 1.7, "mishandled_bags_per_1k": 5.4},
+  "VS": {"name": "Virgin Atlantic", "on_time_pct": 80.3, "cancel_pct": 1.4, "mishandled_bags_per_1k": 5.0},
+  "AF": {"name": "Air France", "on_time_pct": 77.0, "cancel_pct": 2.1, "mishandled_bags_per_1k": 6.5},
+  "EK": {"name": "Emirates", "on_time_pct": 81.5, "cancel_pct": 1.0, "mishandled_bags_per_1k": 3.8},
+  "SQ": {"name": "Singapore Airlines", "on_time_pct": 85.7, "cancel_pct": 0.8, "mishandled_bags_per_1k": 3.1}
+}

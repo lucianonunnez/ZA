@@ -1,0 +1,13 @@
+{
+  "name": "Ascend Concierge Copilot",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "postCreateCommand": "pip install -e '.[dev,mcp]'",
+  "customizations": {
+    "vscode": {
+      "extensions": ["charliermarsh.ruff", "ms-python.python"]
+    }
+  },
+  "remoteEnv": {
+    "COPILOT_PROVIDER": "mock"
+  }
+}

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets & local config — NEVER commit these
+.env
+.env.local
+*.key
+secrets/
+
+# Runtime artifacts
+traces/
+*.log
+.DS_Store
+
+# Local databases / member store (never commit member data)
+*.sqlite3
+member_memory.json

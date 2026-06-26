@@ -1,0 +1,41 @@
+name: Eval arena — model scorecard
+
+# The "arena": run the multi-model scorecard in the cloud, on demand or weekly.
+# Results render in the run summary as a leaderboard. With the OPENROUTER_API_KEY
+# secret + provider=openrouter, the numbers are real (GLM vs Claude vs GPT ...).
+
+on:
+  workflow_dispatch:
+    inputs:
+      models:
+        description: "Space-separated model names (blank = default set)"
+        required: false
+        default: ""
+      provider:
+        description: "Model provider (openrouter needs the OPENROUTER_API_KEY secret)"
+        type: choice
+        options: [mock, openrouter]
+        default: mock
+  schedule:
+    - cron: "0 6 * * 1"   # weekly, Monday 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  arena:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e .
+      - name: Run scorecard
+        env:
+          # On the weekly schedule there are no inputs, so default to mock.
+          COPILOT_PROVIDER: ${{ inputs.provider || 'mock' }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          NO_COLOR: "1"
+        run: python evals/run_evals.py ${{ inputs.models }}

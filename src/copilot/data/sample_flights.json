@@ -1,0 +1,42 @@
+{
+  "_note": "Offline inventory keyed by 'ORIGIN-DEST'. Used when no live flight API key is configured. Prices and points are illustrative but internally consistent for the points-arbitrage demo.",
+  "JFK-LHR": [
+    {
+      "carrier": "British Airways", "carrier_code": "BA", "flight_no": "BA178",
+      "depart": "21:25", "arrive": "09:10+1", "cabin": "business",
+      "duration_min": 405, "stops": 0,
+      "cash_price_usd": 4820, "points_price": 120000, "points_program": "Avios",
+      "points_cash_value_usd": 3050
+    },
+    {
+      "carrier": "Virgin Atlantic", "carrier_code": "VS", "flight_no": "VS004",
+      "depart": "22:40", "arrive": "10:35+1", "cabin": "business",
+      "duration_min": 415, "stops": 0,
+      "cash_price_usd": 4510, "points_price": 95000, "points_program": "Flying Club",
+      "points_cash_value_usd": 2980
+    },
+    {
+      "carrier": "American Airlines", "carrier_code": "AA", "flight_no": "AA100",
+      "depart": "18:30", "arrive": "06:30+1", "cabin": "business",
+      "duration_min": 420, "stops": 0,
+      "cash_price_usd": 4190, "points_price": 115000, "points_program": "AAdvantage",
+      "points_cash_value_usd": 3360
+    }
+  ],
+  "EZE-MIA": [
+    {
+      "carrier": "American Airlines", "carrier_code": "AA", "flight_no": "AA998",
+      "depart": "22:10", "arrive": "05:45+1", "cabin": "business",
+      "duration_min": 515, "stops": 0,
+      "cash_price_usd": 3120, "points_price": 80000, "points_program": "AAdvantage",
+      "points_cash_value_usd": 2480
+    },
+    {
+      "carrier": "Delta Air Lines", "carrier_code": "DL", "flight_no": "DL338",
+      "depart": "23:30", "arrive": "08:15+1", "cabin": "business",
+      "duration_min": 540, "stops": 1,
+      "cash_price_usd": 2890, "points_price": 92000, "points_program": "SkyMiles",
+      "points_cash_value_usd": 2530
+    }
+  ]
+}
