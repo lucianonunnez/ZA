@@ -17,6 +17,16 @@ def airports() -> dict:
     return _load("airports.json")
 
 
+def airlines() -> dict:
+    return {k: v for k, v in _load("airlines.json").items() if not k.startswith("_")}
+
+
+@cache
+def icao_to_iata() -> dict:
+    """Reverse map of airport ICAO -> IATA, for resolving OpenSky arrival codes."""
+    return {a["icao"]: iata for iata, a in airports().items() if a.get("icao")}
+
+
 def airline_reliability() -> dict:
     return _load("airlines_reliability.json")
 

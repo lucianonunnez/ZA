@@ -35,9 +35,10 @@ def to_markdown(result) -> str:
     for i, o in enumerate(rec.options):
         f, r = o.flight, o.risk
         star = "⭐" if i == rec.recommended_index else ""
+        price = f"{f.cash_price_usd:,.0f}" + (" est." if f.estimated else "")
         out.append(
             f"| {star} | {f.carrier} {f.flight_no} | {f.depart} | "
-            f"{f.cash_price_usd:,.0f} | {f.savings_pct or 0:.0f}% | {r.score:.0f} ({r.band}) |"
+            f"{price} | {f.savings_pct or 0:.0f}% | {r.score:.0f} ({r.band}) |"
         )
     if rec.whatsapp_message:
         out += ["", "**📱 Paste-ready message**", "", f"> {rec.whatsapp_message}"]

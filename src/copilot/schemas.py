@@ -53,6 +53,10 @@ class FlightOption(BaseModel):
     points_price: int | None = None
     points_program: str | None = None
     points_cash_value_usd: float | None = None  # what those points are "worth"
+    # True when the price is a distance-based estimate (e.g. OpenSky source has no
+    # fares), so the UI can label it honestly rather than implying a real quote.
+    estimated: bool = False
+    source: str = "inventory"  # inventory | amadeus | opensky | scraper
 
     @property
     def savings_pct(self) -> float | None:

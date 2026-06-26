@@ -47,8 +47,9 @@ def quote(request: str, member: str = typer.Option(None, help="Member handle for
         f, r = o.flight, o.risk
         mark = "[green]★[/green]" if i == rec.recommended_index else ""
         band_color = {"low": "green", "moderate": "yellow", "elevated": "dark_orange", "high": "red"}.get(r.band, "white")
+        price = f"{f.cash_price_usd:,.0f}" + (" est." if f.estimated else "")
         table.add_row(
-            mark, f"{f.carrier} {f.flight_no}", f.depart, f"{f.cash_price_usd:,.0f}",
+            mark, f"{f.carrier} {f.flight_no}", f.depart, price,
             f"{f.savings_pct or 0:.0f}%", f"[{band_color}]{r.score:.0f} {r.band}[/{band_color}]",
         )
     console.print(table)
