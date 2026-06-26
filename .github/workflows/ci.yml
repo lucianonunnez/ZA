@@ -8,6 +8,10 @@ on:
     branches: ["**"]
   pull_request:
 
+# Least privilege: the workflow only needs to read the repo.
+permissions:
+  contents: read
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -46,7 +50,10 @@ jobs:
           # Report advisories without failing the demo on transitive ones.
           pip-audit || true
 
-      - name: Secret scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Secret scan (gitleaks CLI)
+        run: |
+          # Use the CLI directly: no license gate, no PR-API calls, fully under our control.
+          VER=8.21.0
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${VER}/gitleaks_${VER}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          ./gitleaks detect --source . --no-banner --redact --verbose
