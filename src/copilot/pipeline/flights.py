@@ -79,7 +79,15 @@ async def search_flights_async(brief: TripBrief) -> list[FlightOption]:
         if scraped:
             return _rank(scraped)
 
-    return search_flights(brief)
+    # Curated inventory (hand-tuned points arbitrage) for the routes we have it on.
+    inventory = search_flights(brief)
+    if inventory:
+        return inventory
+
+    # Universal fallback: never come back empty for a known city pair.
+    from copilot.pipeline.synthetic_source import synthesize
+
+    return _rank(synthesize(brief, origin, dest))
 
 
 def search_flights(brief: TripBrief) -> list[FlightOption]:

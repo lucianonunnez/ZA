@@ -41,6 +41,9 @@ def format_reply(result: ConciergeResult) -> str:
     lines.append("")
 
     if not rec.options:
+        if "UNKNOWN" in (b.origin, b.destination):
+            return ("I didn't catch a route there. Tell me where from and to — e.g. "
+                    "<i>NYC to London business, morning arrival</i>.")
         lines.append(rec.whatsapp_message or "No options found for this route yet.")
     else:
         for i, o in enumerate(rec.options[:4]):
