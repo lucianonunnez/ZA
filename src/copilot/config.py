@@ -86,6 +86,12 @@ class Settings:
     amadeus_client_id: str = field(default_factory=lambda: os.getenv("AMADEUS_CLIENT_ID", ""))
     amadeus_secret: str = field(default_factory=lambda: os.getenv("AMADEUS_CLIENT_SECRET", ""))
     amadeus_host: str = field(default_factory=lambda: os.getenv("AMADEUS_HOSTNAME", "test"))
+    # Travelpayouts / Aviasales Data API (real cached fares, free token).
+    travelpayouts_token: str = field(default_factory=lambda: os.getenv("TRAVELPAYOUTS_TOKEN", ""))
+
+    @property
+    def travelpayouts_enabled(self) -> bool:
+        return bool(self.travelpayouts_token)
 
     @property
     def amadeus_enabled(self) -> bool:

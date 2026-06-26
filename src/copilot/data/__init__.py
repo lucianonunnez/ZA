@@ -27,6 +27,12 @@ def icao_to_iata() -> dict:
     return {a["icao"]: iata for iata, a in airports().items() if a.get("icao")}
 
 
+@cache
+def airline_name_by_iata() -> dict:
+    """IATA airline code -> display name (for sources that return IATA codes)."""
+    return {v["iata"]: v["name"] for v in airlines().values()}
+
+
 def airline_reliability() -> dict:
     return _load("airlines_reliability.json")
 

@@ -184,8 +184,9 @@ OpenRouter key and set `COPILOT_PROVIDER=openrouter` to route to real models
 | `OPENROUTER_API_KEY` | one key, many labs |
 | `COPILOT_BUDGET_USD` | hard ceiling on spend per process |
 | `AERODATABOX_API_KEY` | optional — live flight status + aircraft reg for `monitor`/`watch` |
-| `COPILOT_FLIGHT_SOURCE` | `opensky` for real flights on any route (free, no key) · `scrape` for the Playwright source · unset = bundled inventory |
-| `AMADEUS_CLIENT_ID` / `AMADEUS_CLIENT_SECRET` | optional — real fares via Amadeus (note: Amadeus' free self-service portal is being decommissioned mid-2026); takes priority over OpenSky when set |
+| `COPILOT_FLIGHT_SOURCE` | the switch: `auto` cascades every available real source (Amadeus → Travelpayouts → fast-flights → OpenSky) → inventory → labeled estimate; a specific value forces one; unset = offline |
+| `TRAVELPAYOUTS_TOKEN` | optional — real cached fares for any route (free token at travelpayouts.com) |
+| `AMADEUS_CLIENT_ID` / `AMADEUS_CLIENT_SECRET` | optional — real fares via Amadeus (note: its free self-service portal is being decommissioned mid-2026) |
 
 ## Layout
 
