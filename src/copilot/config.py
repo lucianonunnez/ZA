@@ -82,6 +82,19 @@ class Settings:
     anthropic_key: str = field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY", ""))
     budget_usd: float = field(default_factory=lambda: float(os.getenv("COPILOT_BUDGET_USD", "5.0")))
     trace_dir: str = field(default_factory=lambda: os.getenv("COPILOT_TRACE_DIR", "traces"))
+    # Amadeus Self-Service (real flight search). Free tier uses the test host.
+    amadeus_client_id: str = field(default_factory=lambda: os.getenv("AMADEUS_CLIENT_ID", ""))
+    amadeus_secret: str = field(default_factory=lambda: os.getenv("AMADEUS_CLIENT_SECRET", ""))
+    amadeus_host: str = field(default_factory=lambda: os.getenv("AMADEUS_HOSTNAME", "test"))
+
+    @property
+    def amadeus_enabled(self) -> bool:
+        return bool(self.amadeus_client_id and self.amadeus_secret)
+
+    @property
+    def amadeus_base_url(self) -> str:
+        return ("https://api.amadeus.com" if self.amadeus_host == "production"
+                else "https://test.api.amadeus.com")
 
     def resolve_provider(self) -> str:
         """Fall back to mock if the chosen provider has no key — so a demo never
