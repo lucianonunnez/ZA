@@ -14,20 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-python@v5
         with:
-          enable-cache: true
+          python-version: "3.11"
+          cache: pip
 
-      - name: Set up Python
-        run: uv python install 3.11
-
-      - name: Install (incl. optional extras)
-        run: uv pip install --system -e ".[dev,mcp]"
+      - name: Install (incl. optional extras) + ruff
+        run: pip install -e ".[dev,mcp]" ruff
 
       - name: Lint (ruff)
-        run: |
-          uv pip install --system ruff
-          ruff check src crm evals tests
+        run: ruff check src crm evals tests
 
       - name: Run tests
         run: pytest -q
@@ -39,12 +35,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
 
       - name: Dependency vulnerability scan (pip-audit)
         run: |
-          uv pip install --system pip-audit .
-          pip-audit --strict || true   # report, don't block the demo on transitive advisories
+          pip install pip-audit .
+          # Report advisories without failing the demo on transitive ones.
+          pip-audit || true
 
       - name: Secret scan (gitleaks)
         uses: gitleaks/gitleaks-action@v2
