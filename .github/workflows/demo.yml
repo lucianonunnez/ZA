@@ -38,7 +38,10 @@ jobs:
         env:
           COPILOT_PROVIDER: ${{ inputs.provider }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          # Real flight search for any route (set these secrets to enable Amadeus).
+          # Real flights for any route via OpenSky (free, no key). Falls back to
+          # bundled inventory if OpenSky is unreachable/rate-limited.
+          COPILOT_FLIGHT_SOURCE: opensky
+          # If Amadeus secrets are set they take priority (real fares).
           AMADEUS_CLIENT_ID: ${{ secrets.AMADEUS_CLIENT_ID }}
           AMADEUS_CLIENT_SECRET: ${{ secrets.AMADEUS_CLIENT_SECRET }}
           DEMO_REQUEST: ${{ inputs.request }}

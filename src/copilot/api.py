@@ -111,8 +111,9 @@ async function run() {
     let rows = rec.options.map((o,i) => {
       const f=o.flight, r=o.risk, star = i===rec.recommended_index ? '<span class="star">★</span>' : '';
       const save = f.savings_pct ? f.savings_pct.toFixed(0)+'%' : '—';
+      const price = '$'+f.cash_price_usd.toLocaleString() + (f.estimated ? ' <small>est.</small>' : '');
       return `<tr><td>${star}</td><td>${f.carrier} ${f.flight_no}</td><td>${f.depart}</td>
-        <td>$${f.cash_price_usd.toLocaleString()}</td><td>${save}</td>
+        <td>${price}</td><td>${save}</td>
         <td class="band-${r.band}">${r.score.toFixed(0)} ${r.band}</td></tr>`;
     }).join('');
     out.innerHTML = `<div class="card">
