@@ -13,12 +13,30 @@ isn't there (it runs **fully offline** with a deterministic mock provider).
 ```bash
 uv venv && uv pip install -e ".[dev]"
 copilot quote "I need NYC to London next Thursday, business, morning arrival, flexible budget"
+copilot member vip1 --learn JFK,LHR,BA,business   # teach the member CRM
+copilot quote "two of us to London thursday" --member vip1   # 2nd quote uses memory
 copilot watch   AA100              # live status + inbound-aircraft tracking
 copilot monitor AA100 --to LHR     # post-purchase proactive alert (the Ascend loop)
 copilot models                     # registry + active provider
 python evals/run_evals.py          # multi-model scorecard
-pytest -q                          # 18 tests, all offline
+pytest -q                          # 25 tests, all offline
 ```
+
+## Stack (every choice maps to a need, nothing for its own sake)
+
+**Polyglot by plane** — the senior decision that ties it together:
+- **FastAPI** — the low-latency *quoting hot path* (`api.py`), async.
+- **Django** — the *control plane*: member CRM + customer intelligence, with the
+  ORM, migrations and an admin panel the concierge team actually uses (`crm/`).
+  Postgres in prod (SQLite by default), so it runs anywhere.
+- **MCP server** (`mcp_server.py`) — exposes the tools so an agent calls the same
+  pipeline the CLI and API use. **Playwright** scraper (`pipeline/scraper.py`) is
+  the no-API flight source. **Docker** + **GitHub Actions** (ruff · pytest ·
+  pip-audit · gitleaks) + **Dependabot** are the CI/security gates.
+
+> **Deliberately *not* included** (the most senior signal): no queue/Kafka/
+> microservices. There's no async-heavy workload to justify them yet; adding them
+> would be complexity without a problem. Knowing when *not* to add tech matters.
 
 ---
 
@@ -34,6 +52,10 @@ pytest -q                          # 18 tests, all offline
 | **Points/miles arbitrage** | `pipeline/flights.py` | Surfaces cash-vs-points value and ranks by savings. |
 | **Data-handling judgment** | `guardrails/pii.py` | PII is redacted before any text reaches a model or a log. |
 | **Provider-agnostic** | `gateway/*.py` | OpenRouter (one key → GLM, DeepSeek, Claude, GPT, Gemini), native Anthropic, or offline mock. |
+| **Customer intelligence** | `memory/` + `crm/` | Learns each member's preferences so the next quote beats the first; swappable JSON ↔ Django/Postgres store. |
+| **AI-native interface (MCP)** | `mcp_server.py` | Agents call `quote_trip`/`watch_flight`/`monitor_flight`/`member_profile` as tools. |
+| **Scraping / browser automation** | `pipeline/scraper.py` | Playwright flight source behind the inventory seam (the JD bonus). |
+| **CI / security gates** | `.github/`, `Dockerfile` | ruff + pytest + pip-audit + gitleaks + Dependabot; containerized, non-root. |
 
 ## The pipeline
 
@@ -127,14 +149,18 @@ OpenRouter key and set `COPILOT_PROVIDER=openrouter` to route to real models
 ```
 src/copilot/
   config.py            model registry, tiers, settings, budget
-  schemas.py           Pydantic contracts (TripBrief, FlightOption, RiskAssessment, Recommendation)
+  schemas.py           Pydantic contracts (TripBrief, FlightOption, RiskAssessment, FlightStatus, ...)
   gateway/             router + provider adapters (openrouter, anthropic, mock)
-  pipeline/            extract · flights · weather · risk · recommend · live · monitor · orchestrator
+  pipeline/            extract · flights · scraper · weather · risk · recommend · live · monitor · orchestrator
+  memory/              MemoryStore protocol + JSON store + shared learning logic
   guardrails/          PII redaction
   observability/       cost/latency ledger
-  cli.py  api.py       demo entrypoints (Typer CLI: quote/watch/monitor/models + FastAPI)
+  mcp_server.py        MCP server exposing the tools to agents
+  cli.py  api.py       Typer CLI (quote/watch/monitor/member/models) + FastAPI
+crm/                   Django control plane: members app (models, admin, migrations, DjangoMemoryStore)
 evals/                 dataset + LLM-judge + multi-model scorecard
-tests/                 18 tests, all offline
+.github/ Dockerfile    CI (ruff/pytest/pip-audit/gitleaks), Dependabot, container
+tests/                 25 tests, all offline
 ```
 
 ## What's mocked vs real (honest scope)

@@ -1,6 +1,5 @@
 """Tests that encode the evidence: the risk model must reflect what the data says."""
 
-import pytest
 
 from copilot.gateway import Gateway
 from copilot.pipeline.risk import _time_of_day_risk, assess_risk

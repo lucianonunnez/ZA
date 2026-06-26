@@ -14,7 +14,6 @@ from rich.panel import Panel
 from rich.table import Table
 
 from copilot.config import MODELS, TIER_DEFAULTS, settings
-from copilot.gateway import Gateway
 from copilot.pipeline import run_concierge
 
 app = typer.Typer(add_completion=False, help="Ascend Concierge Copilot")
@@ -39,8 +38,11 @@ def quote(request: str, member: str = typer.Option(None, help="Member handle for
 
     table = Table(title="Options (ranked)")
     table.add_column("", width=3)
-    table.add_column("Flight"); table.add_column("Depart"); table.add_column("Cash $", justify="right")
-    table.add_column("Points save", justify="right"); table.add_column("Risk", justify="right")
+    table.add_column("Flight")
+    table.add_column("Depart")
+    table.add_column("Cash $", justify="right")
+    table.add_column("Points save", justify="right")
+    table.add_column("Risk", justify="right")
     for i, o in enumerate(rec.options):
         f, r = o.flight, o.risk
         mark = "[green]★[/green]" if i == rec.recommended_index else ""
@@ -163,8 +165,10 @@ def models() -> None:
     console.print(f"Active provider: [bold]{settings.resolve_provider()}[/bold]  "
                   f"(budget cap ${settings.budget_usd:.2f})\n")
     table = Table(title="Model registry")
-    table.add_column("Name", style="cyan"); table.add_column("Slug")
-    table.add_column("$/1M in", justify="right"); table.add_column("$/1M out", justify="right")
+    table.add_column("Name", style="cyan")
+    table.add_column("Slug")
+    table.add_column("$/1M in", justify="right")
+    table.add_column("$/1M out", justify="right")
     table.add_column("Tier role")
     role = {v: k.value for k, v in TIER_DEFAULTS.items()}
     for name, spec in MODELS.items():

@@ -17,8 +17,6 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-import time
-from importlib import resources
 from pathlib import Path
 
 # Allow running as a plain script: add src/ to path.
@@ -49,7 +47,6 @@ def load_dataset() -> list[dict]:
 async def eval_model(model: str, dataset: list[dict]) -> dict:
     gw = Gateway()
     acc_total, judge_total = 0.0, 0
-    t0 = time.perf_counter()
 
     for row in dataset:
         # Force this candidate as the CHEAP-tier extraction model.
@@ -59,7 +56,7 @@ async def eval_model(model: str, dataset: list[dict]) -> dict:
 
         flights = search_flights(brief)
         risks = await asyncio.gather(*(assess_risk(f, gw, explain=False) for f in flights))
-        scored = [ScoredOption(flight=f, risk=r) for f, r in zip(flights, risks)]
+        scored = [ScoredOption(flight=f, risk=r) for f, r in zip(flights, risks, strict=True)]
         rec = await recommend(brief, scored, gw)
         score, _ = await judge_recommendation(rec, gw)
         judge_total += score

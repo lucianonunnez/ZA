@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+traces
+*.sqlite3
+member_memory.json
+.env
+crm
+tests
+evals

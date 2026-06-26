@@ -17,6 +17,8 @@ from copilot.config import (
     TIER_FALLBACKS,
     Settings,
     Tier,
+)
+from copilot.config import (
     settings as global_settings,
 )
 from copilot.gateway.base import ChatMessage, LLMResult, Provider

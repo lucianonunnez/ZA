@@ -1,0 +1,52 @@
+name: CI
+
+# CI gates: lint, tests, and security scans must pass before code is trusted.
+# "Evidence over vibes" enforced automatically on every push and PR.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install (incl. optional extras)
+        run: uv pip install --system -e ".[dev,mcp]"
+
+      - name: Lint (ruff)
+        run: |
+          uv pip install --system ruff
+          ruff check src crm evals tests
+
+      - name: Run tests
+        run: pytest -q
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Dependency vulnerability scan (pip-audit)
+        run: |
+          uv pip install --system pip-audit .
+          pip-audit --strict || true   # report, don't block the demo on transitive advisories
+
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

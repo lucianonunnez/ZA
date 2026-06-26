@@ -18,7 +18,7 @@ With Playwright absent or the network closed, `ScraperFlightSource.search` retur
 
 from __future__ import annotations
 
-from copilot.schemas import Cabin, FlightOption, TripBrief
+from copilot.schemas import FlightOption, TripBrief
 
 
 class ScraperFlightSource:

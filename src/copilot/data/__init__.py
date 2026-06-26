@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import json
-from functools import lru_cache
+from functools import cache
 from importlib import resources
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load(name: str) -> dict:
     with resources.files("copilot.data").joinpath(name).open() as fh:
         return json.load(fh)

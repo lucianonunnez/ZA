@@ -49,7 +49,7 @@ async def run_concierge(
     flights = await search_flights_async(brief)
 
     risks = await asyncio.gather(*(assess_risk(f, gw) for f in flights))
-    scored = [ScoredOption(flight=f, risk=r) for f, r in zip(flights, risks)]
+    scored = [ScoredOption(flight=f, risk=r) for f, r in zip(flights, risks, strict=True)]
     # Re-rank by risk-adjusted desirability happens inside recommend().
     rec = await recommend(brief, scored, gw)
 
