@@ -1,0 +1,6 @@
+{"id": "ex1", "message": "I need to get from NYC to London next Thursday, back Monday, business class, prefer to land in the morning, budget is flexible.", "expect": {"origin": "JFK", "destination": "LHR", "cabin": "business", "budget_flexible": true}}
+{"id": "ex2", "message": "Necesito ir de Buenos Aires a Miami, business, lo antes posible, una persona.", "expect": {"origin": "EZE", "destination": "MIA", "cabin": "business", "passengers": 1}}
+{"id": "ex3", "message": "Can you find me a first class seat from New York to London? Money is no object, I want the most comfortable option.", "expect": {"origin": "JFK", "destination": "LHR", "cabin": "first"}}
+{"id": "ex4", "message": "two of us, NYC to London, business, leaving thursday", "expect": {"origin": "JFK", "destination": "LHR", "cabin": "business", "passengers": 2}}
+{"id": "ex5", "message": "Hola, quiero volar de Nueva York a Londres en clase ejecutiva, salgo el jueves y prefiero llegar temprano.", "expect": {"origin": "JFK", "destination": "LHR", "cabin": "business"}}
+{"id": "ex6", "message": "Need a business class flight EZE to MIA for one passenger, flexible on dates.", "expect": {"origin": "EZE", "destination": "MIA", "cabin": "business", "budget_flexible": true}}
