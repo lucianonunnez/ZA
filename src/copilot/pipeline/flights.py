@@ -21,9 +21,13 @@ _CITY_ALIASES = {
     "sf": "SFO", "san fran": "SFO",
     "dc": "IAD", "d.c.": "IAD", "washington dc": "IAD",
     "londres": "LHR",
-    "bsas": "EZE", "baires": "EZE",
-    "rio": "GIG", "cdmx": "MEX", "mexico df": "MEX",
-    "sao paulo": "GRU", "são paulo": "GRU",
+    "bsas": "EZE", "baires": "EZE", "buenos aires": "EZE",
+    "rio": "GIG", "cdmx": "MEX", "mexico df": "MEX", "ciudad de mexico": "MEX",
+    "sao paulo": "GRU", "são paulo": "GRU", "san pablo": "GRU",
+    # Spanish / other-language names — only for airports we actually have.
+    "roma": "FCO", "tokio": "NRT", "pekin": "PEK", "pekín": "PEK",
+    "nueva york": "JFK", "estambul": "IST", "el cairo": "CAI",
+    "singapur": "SIN", "dubái": "DXB", "johannesburgo": "JNB",
 }
 
 
