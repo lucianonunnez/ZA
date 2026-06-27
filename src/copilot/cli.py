@@ -161,6 +161,23 @@ def member(
 
 
 @app.command()
+def doctor() -> None:
+    """Health-check the live connections (Telegram token, model key) — evidence
+    over vibes, so a dead token never surprises you mid-demo."""
+    from copilot.healthcheck import run_checks
+
+    checks = asyncio.run(run_checks())
+    table = Table(title="Connection health")
+    table.add_column("Connection", style="cyan")
+    table.add_column("Status")
+    table.add_column("Detail")
+    for c in checks:
+        mark = "[green]OK[/green]" if c.ok else ("[red]FAIL[/red]" if c.required else "[yellow]warn[/yellow]")
+        table.add_row(c.name, mark, c.detail)
+    console.print(table)
+
+
+@app.command()
 def models() -> None:
     """Show the model registry, tier defaults, and the active provider."""
     console.print(f"Active provider: [bold]{settings.resolve_provider()}[/bold]  "
