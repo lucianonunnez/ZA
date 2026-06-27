@@ -1,14 +1,13 @@
 name: Health check — connections
 
 # Verifies the live integrations (Telegram token, model key) actually work.
-# Runs on a schedule and on demand; a broken connection fails the job, so GitHub
-# emails you instead of you discovering it mid-demo. Caught the "regenerated the
-# token but forgot to update the secret" class of bug for us.
+# On demand only: run it before a demo to confirm the connections. The scheduled
+# trigger is intentionally off — Telegram's API is intermittently slow from CI
+# runners, and a transient getMe ReadTimeout (not a real outage) was emailing
+# false-alarm failures. Re-enable the cron once on a steadier host (webhook).
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 */6 * * *"   # every 6 hours
 
 permissions:
   contents: read
