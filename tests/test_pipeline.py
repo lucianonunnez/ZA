@@ -1,6 +1,33 @@
+import pytest
+
 from copilot.pipeline import run_concierge
-from copilot.pipeline.flights import search_flights
+from copilot.pipeline.flights import _to_iata, search_flights
 from copilot.schemas import TripBrief
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("Roma", "FCO"),       # other-language city name
+        ("roma", "FCO"),       # casing
+        ("FCO", "FCO"),        # explicit IATA
+        ("fco", "FCO"),        # lower-case IATA
+        ("Rome", "FCO"),       # English name, derived from the data
+        ("Dubái", "DXB"),      # accents
+        ("Tokio", "NRT"),      # Spanish name
+        ("romaa", "FCO"),      # typo -> fuzzy match
+        ("lndon", "LHR"),      # typo
+        ("nyc", "JFK"),        # nickname
+        ("KJFK", "JFK"),       # ICAO code
+        ("fly me to rome", "FCO"),  # a place named inside a phrase
+    ],
+)
+def test_city_resolution_discovers_iata(text, expected):
+    assert _to_iata(text) == expected
+
+
+def test_unknown_place_flows_through_unchanged():
+    assert _to_iata("ZZZ") == "ZZZ"
 
 
 def test_flights_sorted_by_points_savings():

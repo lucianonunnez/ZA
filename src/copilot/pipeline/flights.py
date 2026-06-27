@@ -9,44 +9,89 @@ literal bonus point in the JD, so the seam is deliberately clean.
 from __future__ import annotations
 
 import os
+import unicodedata
+from difflib import get_close_matches
 from functools import cache
 
 from copilot.data import airports, sample_flights
 from copilot.schemas import Cabin, FlightOption, TripBrief
 
-# Common abbreviations / nicknames the airport data's city field doesn't cover.
+# A few nicknames/abbreviations that aren't the airport's city or name field, so
+# the resolver below can't derive them on its own. Accents and casing are handled
+# generically — these are only true aliases (slang, other-language city names).
 _CITY_ALIASES = {
-    "nyc": "JFK", "new york city": "JFK",
-    "la": "LAX", "l.a.": "LAX", "los angeles": "LAX",
-    "sf": "SFO", "san fran": "SFO",
-    "dc": "IAD", "d.c.": "IAD", "washington dc": "IAD",
+    "nyc": "JFK", "the big apple": "JFK",
+    "la": "LAX", "sf": "SFO", "san fran": "SFO",
+    "dc": "IAD", "washington dc": "IAD",
     "londres": "LHR",
-    "bsas": "EZE", "baires": "EZE", "buenos aires": "EZE",
-    "rio": "GIG", "cdmx": "MEX", "mexico df": "MEX", "ciudad de mexico": "MEX",
-    "sao paulo": "GRU", "são paulo": "GRU", "san pablo": "GRU",
-    # Spanish / other-language names — only for airports we actually have.
-    "roma": "FCO", "tokio": "NRT", "pekin": "PEK", "pekín": "PEK",
+    "bsas": "EZE", "baires": "EZE",
+    "rio": "GIG", "cdmx": "MEX", "mexico df": "MEX",
+    "san pablo": "GRU",
+    # Other-language city names for airports we actually have.
+    "roma": "FCO", "tokio": "NRT", "pekin": "PEK",
     "nueva york": "JFK", "estambul": "IST", "el cairo": "CAI",
-    "singapur": "SIN", "dubái": "DXB", "johannesburgo": "JNB",
+    "singapur": "SIN", "johannesburgo": "JNB",
 }
 
 
+def _norm(s: str) -> str:
+    """Lowercase, strip accents and punctuation, collapse whitespace.
+
+    So "Dubái", "DUBAI" and "dubai" all land on the same key, and "l.a." -> "la".
+    """
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    s = "".join(c if c.isalnum() or c.isspace() else " " for c in s)
+    return " ".join(s.lower().split())
+
+
 @cache
-def _city_to_iata() -> dict[str, str]:
-    """Build city -> primary IATA from the airport dataset (first airport wins)."""
-    mapping = dict(_CITY_ALIASES)
+def _resolver() -> dict[str, str]:
+    """Normalized lookup key -> IATA, derived from the airport data itself.
+
+    Every IATA, ICAO, city and airport name becomes a searchable key, plus the
+    hand-kept aliases. First airport wins for a shared city (e.g. New York -> JFK).
+    """
+    table: dict[str, str] = {}
     for iata, a in airports().items():
-        city = a.get("city", "").lower()
-        if city and city not in mapping:
-            mapping[city] = iata
-    return mapping
+        for field in (iata, a.get("icao", ""), a.get("city", ""), a.get("name", "")):
+            key = _norm(field)
+            if key:
+                table.setdefault(key, iata)
+    for alias, iata in _CITY_ALIASES.items():
+        table.setdefault(_norm(alias), iata)
+    return table
 
 
 def _to_iata(value: str) -> str:
-    v = value.strip()
-    if v.upper() in airports():
-        return v.upper()
-    return _city_to_iata().get(v.lower(), v.upper())
+    """Resolve free text to an IATA code, discovering the city as best it can.
+
+    Order: explicit 3-letter IATA -> exact normalized match (city/name/code/alias)
+    -> a known place named inside a longer phrase -> fuzzy match for typos. Falls
+    back to the upper-cased input so an unknown value still flows through.
+    """
+    raw = value.strip()
+    if not raw:
+        return raw.upper()
+    if len(raw) == 3 and raw.upper() in airports():
+        return raw.upper()
+
+    table = _resolver()
+    n = _norm(raw)
+    if n in table:
+        return table[n]
+
+    # "fly me to rome tomorrow" -> a known place named inside the phrase.
+    padded = f" {n} "
+    for key, iata in table.items():
+        if len(key) >= 4 and f" {key} " in padded:
+            return iata
+
+    # Typos: "romaa", "lonon" -> closest known place.
+    match = get_close_matches(n, table.keys(), n=1, cutoff=0.82)
+    if match:
+        return table[match[0]]
+    return raw.upper()
 
 
 def _rank(options: list[FlightOption]) -> list[FlightOption]:
