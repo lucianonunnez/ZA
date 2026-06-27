@@ -50,6 +50,47 @@ async def test_openrouter_valid_key():
     assert c.ok and "valid" in c.detail
 
 
+class _EmptyTimeout(Exception):
+    """Mimics httpx timeouts, whose str() is empty (the bug that hid the reason)."""
+
+    def __str__(self):
+        return ""
+
+
+class _FlakyClient:
+    """Raises `fail` times, then returns the queued response — to test retries."""
+
+    def __init__(self, resp, fail):
+        self._resp, self._fail, self.calls = resp, fail, 0
+
+    async def get(self, url, headers=None):
+        self.calls += 1
+        if self.calls <= self._fail:
+            raise _EmptyTimeout()
+        return self._resp
+
+
+async def test_telegram_transient_blip_recovers(monkeypatch):
+    import copilot.healthcheck as hc
+    monkeypatch.setattr(hc.asyncio, "sleep", lambda *_: _noop())
+    client = _FlakyClient(_Resp(payload={"ok": True, "result": {"username": "FLY_009Bot"}}), fail=2)
+    c = await check_telegram(client, "tok")
+    assert c.ok and client.calls == 3   # failed twice, third succeeded
+
+
+async def test_telegram_persistent_failure_has_a_reason(monkeypatch):
+    import copilot.healthcheck as hc
+    monkeypatch.setattr(hc.asyncio, "sleep", lambda *_: _noop())
+    client = _FlakyClient(_Resp(), fail=99)
+    c = await check_telegram(client, "tok")
+    assert not c.ok and c.required
+    assert c.detail and "Telegram" in c.detail   # never the old empty string
+
+
+async def _noop():
+    return None
+
+
 def test_summary_is_markdown_table():
     from copilot.healthcheck import Check
     md = _summary([Check("Telegram", True, True, "ok"), Check("OpenRouter", False, False, "no key")])
