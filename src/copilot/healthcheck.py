@@ -28,25 +28,49 @@ class Check:
     detail: str
 
 
+def _why(exc: Exception) -> str:
+    """A human reason even for httpx timeouts, whose str() is empty."""
+    return (str(exc) or type(exc).__name__)[:80]
+
+
+async def _get_retrying(client, url, headers=None, attempts: int = 3):
+    """GET with a few retries, so one transient network blip isn't a hard FAIL.
+
+    A scheduled check reaching out over the public internet will occasionally hit
+    a timeout that has nothing to do with the credential. Retrying turns that from
+    a false alarm (and an email) into a non-event. The last error still surfaces.
+    """
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            return await client.get(url, headers=headers)
+        except Exception as exc:  # noqa: BLE001
+            last = exc
+            if i < attempts - 1:
+                await asyncio.sleep(2 * (i + 1))
+    raise last  # type: ignore[misc]
+
+
 async def check_telegram(client: httpx.AsyncClient, token: str) -> Check:
     if not token:
         return Check("Telegram", True, False, "TELEGRAM_BOT_TOKEN not set")
     try:
-        r = await client.get(f"https://api.telegram.org/bot{token}/getMe")
+        r = await _get_retrying(client, f"https://api.telegram.org/bot{token}/getMe")
         d = r.json()
         if d.get("ok"):
             return Check("Telegram", True, True, f"@{d['result'].get('username', '?')} reachable")
-        return Check("Telegram", True, False, d.get("description", "token rejected"))
+        return Check("Telegram", True, False, d.get("description") or "token rejected")
     except Exception as exc:  # noqa: BLE001
-        return Check("Telegram", True, False, str(exc)[:80])
+        # A transient network error is not a rejected token — say so, don't cry wolf.
+        return Check("Telegram", True, False, f"could not reach Telegram ({_why(exc)})")
 
 
 async def check_openrouter(client: httpx.AsyncClient, key: str) -> Check:
     if not key:
         return Check("OpenRouter", False, False, "OPENROUTER_API_KEY not set (mock provider ok)")
     try:
-        r = await client.get("https://openrouter.ai/api/v1/key",
-                             headers={"Authorization": f"Bearer {key}"})
+        r = await _get_retrying(client, "https://openrouter.ai/api/v1/key",
+                                headers={"Authorization": f"Bearer {key}"})
         if r.status_code == 200:
             data = r.json().get("data", {})
             limit = data.get("limit")
@@ -54,11 +78,11 @@ async def check_openrouter(client: httpx.AsyncClient, key: str) -> Check:
                          f"key valid{f', limit ${limit}' if limit is not None else ''}")
         return Check("OpenRouter", False, False, f"HTTP {r.status_code} — key rejected")
     except Exception as exc:  # noqa: BLE001
-        return Check("OpenRouter", False, False, str(exc)[:80])
+        return Check("OpenRouter", False, False, f"could not reach OpenRouter ({_why(exc)})")
 
 
 async def run_checks() -> list[Check]:
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    async with httpx.AsyncClient(timeout=20.0) as client:
         return list(await asyncio.gather(
             check_telegram(client, os.getenv("TELEGRAM_BOT_TOKEN", "")),
             check_openrouter(client, settings.openrouter_key),
