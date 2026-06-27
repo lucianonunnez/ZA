@@ -35,6 +35,7 @@ async def run_concierge(
     *,
     member_handle: str | None = None,
     store: MemoryStore | None = None,
+    explain_risk: bool = True,
 ) -> ConciergeResult:
     gw = gateway or Gateway()
 
@@ -48,7 +49,9 @@ async def run_concierge(
     brief = await extract_brief(message, gw, member=member)
     flights = await search_flights_async(brief)
 
-    risks = await asyncio.gather(*(assess_risk(f, gw) for f in flights))
+    # explain_risk=False skips a model call per flight (chat clients don't show the
+    # prose) — much faster for interactive use; the numeric risk is unchanged.
+    risks = await asyncio.gather(*(assess_risk(f, gw, explain=explain_risk) for f in flights))
     scored = [ScoredOption(flight=f, risk=r) for f, r in zip(flights, risks, strict=True)]
     # Re-rank by risk-adjusted desirability happens inside recommend().
     rec = await recommend(brief, scored, gw)
