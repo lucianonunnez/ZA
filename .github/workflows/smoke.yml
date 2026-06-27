@@ -1,0 +1,30 @@
+name: Smoke test — real pipeline (GLM)
+
+# A verification agent that lives in the repo: on a schedule it runs real quotes
+# end to end through the pipeline using the model key (GLM via OpenRouter) and
+# fails if any route returns no recommendation. So a broken key, a provider
+# change or a pipeline regression pages you — the system verifies itself.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 */6 * * *"   # every 6 hours, offset from the health check
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e .
+      - name: Run real quotes (GLM)
+        env:
+          COPILOT_PROVIDER: openrouter      # falls back to mock if no key
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python scripts/smoke.py
