@@ -130,6 +130,13 @@ class TelegramBot:
 
     async def run(self) -> None:
         async with httpx.AsyncClient(timeout=40.0) as client:
+            # Clear any webhook and drop the backlog so we only answer fresh
+            # messages — avoids replying to stale ones after a restart.
+            try:
+                await client.get(self._url("deleteWebhook"),
+                                 params={"drop_pending_updates": "true"})
+            except Exception:
+                pass
             print("Concierge Telegram bot is running. Press Ctrl+C to stop.")
             while True:
                 try:
@@ -137,11 +144,16 @@ class TelegramBot:
                         self._url("getUpdates"),
                         params={"offset": self._offset, "timeout": 30},
                     )
-                    updates = resp.json().get("result", [])
+                    data = resp.json()
                 except Exception:
                     await asyncio.sleep(3)
                     continue
-                for upd in updates:
+                # Not ok (e.g. 409 Conflict: another instance is polling). Back
+                # off and retry instead of spinning — recovers once it's alone.
+                if not data.get("ok"):
+                    await asyncio.sleep(5)
+                    continue
+                for upd in data.get("result", []):
                     self._offset = upd["update_id"] + 1
                     msg = upd.get("message") or upd.get("edited_message")
                     if msg:
