@@ -42,6 +42,9 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           COPILOT_PROVIDER: ${{ inputs.provider }}
+          # Stream the bot's stdout live (Python buffers it otherwise, so its
+          # startup line and any 409 reason stay invisible until the job ends).
+          PYTHONUNBUFFERED: "1"
           # Bot favors speed + reliability: curated inventory, then an instant
           # labeled estimate for any other route. (Slow/flaky live sources like
           # OpenSky are great for the web demo, not for a snappy chat.)
