@@ -7,8 +7,9 @@ name: Smoke test — real pipeline (GLM)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "30 */6 * * *"   # every 6 hours, offset from the health check
+  # Scheduled trigger intentionally off for now: the same intermittent CI→public-API
+  # flakiness that hit the health check would email false-alarm failures. Run on
+  # demand before a demo; re-enable the cron on a steadier host.
 
 permissions:
   contents: read
