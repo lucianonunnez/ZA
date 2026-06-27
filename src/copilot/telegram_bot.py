@@ -62,8 +62,10 @@ def format_reply(result: ConciergeResult) -> str:
     """Render a ConciergeResult as a Telegram HTML message. Pure + testable."""
     b, rec, t = result.brief, result.recommendation, result.trace
 
-    if not rec.options and "UNKNOWN" in (b.origin, b.destination):
-        return ("I didn't catch a route there. Tell me where from and to — e.g. "
+    # No options = no clear route / unsupported city. Give a clear, helpful nudge
+    # rather than a vague "sourcing options" — covers typos and replies like "yes".
+    if not rec.options:
+        return ("I didn't catch a clear route. Send it city to city — e.g. "
                 "<i>NYC to London business, morning arrival</i>.")
 
     header = f"<b>{b.origin} → {b.destination}</b>  ·  {b.cabin.value}  ·  {b.passengers} pax"
@@ -72,21 +74,18 @@ def format_reply(result: ConciergeResult) -> str:
         lines.append(f"<i>🧠 known: {result.member.as_hint()}</i>")
     lines.append("")
 
-    if not rec.options:
-        lines.append(rec.whatsapp_message or "No options found for this route yet.")
-    else:
-        for i, o in enumerate(rec.options[:4]):
-            f, r = o.flight, o.risk
-            dot = _BAND_DOT.get(r.band, "")
-            price = f"${f.cash_price_usd:,.0f}" + (" est." if f.estimated else "")
-            save = f" · save {f.savings_pct:.0f}%" if f.savings_pct else ""
-            title = (f"⭐ <b>{f.carrier} {f.flight_no}</b>" if i == rec.recommended_index
-                     else f"{f.carrier} {f.flight_no}")
-            lines.append(title)
-            lines.append(f"   {f.depart} · {price}{save} · {dot} risk {r.score:.0f}")
-        if rec.whatsapp_message:
-            lines.append("")
-            lines.append(f"💬 {rec.whatsapp_message}")
+    for i, o in enumerate(rec.options[:4]):
+        f, r = o.flight, o.risk
+        dot = _BAND_DOT.get(r.band, "")
+        price = f"${f.cash_price_usd:,.0f}" + (" est." if f.estimated else "")
+        save = f" · save {f.savings_pct:.0f}%" if f.savings_pct else ""
+        title = (f"⭐ <b>{f.carrier} {f.flight_no}</b>" if i == rec.recommended_index
+                 else f"{f.carrier} {f.flight_no}")
+        lines.append(title)
+        lines.append(f"   {f.depart} · {price}{save} · {dot} risk {r.score:.0f}")
+    if rec.whatsapp_message:
+        lines.append("")
+        lines.append(f"💬 {rec.whatsapp_message}")
 
     lines.append("")
     models = ", ".join(sorted(t.get("by_model", {}))) or "—"
@@ -123,7 +122,8 @@ class TelegramBot:
         handle = f"tg:{message['from']['id']}"
         await self._send(client, chat_id, "Sourcing options…")
         try:
-            result = await run_concierge(text, member_handle=handle)
+            # explain_risk=False keeps chat replies fast (no per-flight prose call).
+            result = await run_concierge(text, member_handle=handle, explain_risk=False)
             await self._send(client, chat_id, format_reply(result))
         except Exception as exc:  # noqa: BLE001 — never let one message kill the bot
             await self._send(client, chat_id, f"Sorry, something went wrong: {exc}")
