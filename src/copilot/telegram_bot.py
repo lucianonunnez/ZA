@@ -27,39 +27,71 @@ _API = "https://api.telegram.org/bot{token}/{method}"
 
 _WELCOME = (
     "<b>Concierge Copilot</b>\n"
-    "Tell me a trip in plain language and I'll quote it with a real disruption-risk read.\n\n"
-    "e.g. <i>NYC to London next Thursday, business, morning arrival</i>"
+    "Send me a trip in plain language and I'll quote it with a real disruption-risk read.\n\n"
+    "<b>Try:</b> <i>NYC to London next Thursday, business, morning arrival</i>\n"
+    "Reply <b>why</b> any time to see how I score the risk."
 )
+
+# A short, truthful explanation of the risk method (the "why").
+_RISK_BLURB = (
+    "<b>How I score disruption risk</b>\n"
+    "It's transparent math on official data, weighted by real impact:\n"
+    "• Late-arriving aircraft &amp; departure time — the #1 driver (US DOT)\n"
+    "• Airline on-time reliability (US DOT/BTS)\n"
+    "• Destination weather (Open-Meteo)\n"
+    "• Connections &amp; airport congestion\n"
+    "Once a flight is booked, I also track the <b>inbound aircraft live</b> via ADS-B.\n"
+    "<i>The AI explains the score — it does not guess it.</i>"
+)
+
+_BAND_DOT = {"low": "🟢", "moderate": "🟡", "elevated": "🟠", "high": "🔴"}
+
+
+def is_risk_question(text: str) -> bool:
+    """True for messages that ask how/why the risk works (so we explain it)."""
+    t = text.strip().lower().rstrip("?")
+    if t in ("why", "por que", "porque", "porqué", "how", "explain"):
+        return True
+    return any(k in t for k in (
+        "how do you score", "how is the risk", "what is the risk", "explain the risk",
+        "how risky", "why that risk", "how do you calculate", "riesgo",
+    ))
 
 
 def format_reply(result: ConciergeResult) -> str:
     """Render a ConciergeResult as a Telegram HTML message. Pure + testable."""
     b, rec, t = result.brief, result.recommendation, result.trace
-    lines = [f"<b>{b.origin} → {b.destination}</b> · {b.cabin.value} · {b.passengers} pax"]
+
+    if not rec.options and "UNKNOWN" in (b.origin, b.destination):
+        return ("I didn't catch a route there. Tell me where from and to — e.g. "
+                "<i>NYC to London business, morning arrival</i>.")
+
+    header = f"<b>{b.origin} → {b.destination}</b>  ·  {b.cabin.value}  ·  {b.passengers} pax"
+    lines = [header]
     if result.member and result.member.as_hint():
-        lines.append(f"<i>known: {result.member.as_hint()}</i>")
+        lines.append(f"<i>🧠 known: {result.member.as_hint()}</i>")
     lines.append("")
 
     if not rec.options:
-        if "UNKNOWN" in (b.origin, b.destination):
-            return ("I didn't catch a route there. Tell me where from and to — e.g. "
-                    "<i>NYC to London business, morning arrival</i>.")
         lines.append(rec.whatsapp_message or "No options found for this route yet.")
     else:
         for i, o in enumerate(rec.options[:4]):
             f, r = o.flight, o.risk
-            star = "⭐ " if i == rec.recommended_index else ""
+            dot = _BAND_DOT.get(r.band, "")
             price = f"${f.cash_price_usd:,.0f}" + (" est." if f.estimated else "")
             save = f" · save {f.savings_pct:.0f}%" if f.savings_pct else ""
-            lines.append(f"{star}<b>{f.carrier} {f.flight_no}</b> {f.depart} · {price}{save}"
-                         f" · risk {r.score:.0f} ({r.band})")
+            title = (f"⭐ <b>{f.carrier} {f.flight_no}</b>" if i == rec.recommended_index
+                     else f"{f.carrier} {f.flight_no}")
+            lines.append(title)
+            lines.append(f"   {f.depart} · {price}{save} · {dot} risk {r.score:.0f}")
         if rec.whatsapp_message:
             lines.append("")
-            lines.append(rec.whatsapp_message)
+            lines.append(f"💬 {rec.whatsapp_message}")
 
     lines.append("")
     models = ", ".join(sorted(t.get("by_model", {}))) or "—"
     lines.append(f"<i>models {models} · cost ${t['total_cost_usd']:.4f}</i>")
+    lines.append("<i>Reply “why” to see how I score the risk.</i>")
     return "\n".join(lines)
 
 
@@ -82,6 +114,10 @@ class TelegramBot:
             return
         if text.startswith("/start"):
             await self._send(client, chat_id, _WELCOME)
+            return
+        # Short, truthful answer when someone asks how the risk works.
+        if is_risk_question(text):
+            await self._send(client, chat_id, _RISK_BLURB)
             return
         # Each Telegram user is a member, so memory personalizes their next quote.
         handle = f"tg:{message['from']['id']}"
