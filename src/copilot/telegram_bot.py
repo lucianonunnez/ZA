@@ -145,12 +145,27 @@ class TelegramBot:
                         params={"offset": self._offset, "timeout": 30},
                     )
                     data = resp.json()
-                except Exception:
+                except Exception as exc:  # noqa: BLE001
+                    print(f"getUpdates request failed: {exc!r}")
                     await asyncio.sleep(3)
                     continue
-                # Not ok (e.g. 409 Conflict: another instance is polling). Back
-                # off and retry instead of spinning — recovers once it's alone.
+                # Not ok — surface the reason instead of silently spinning. The two
+                # 409 Conflicts look identical from outside (no replies) but have
+                # opposite fixes:
+                #   "...other getUpdates request"      -> another poller; wait it out.
+                #   "...webhook is active"             -> a stale webhook is stealing
+                #     our updates; deleting it un-wedges us (getMe still says "OK",
+                #     so this is invisible to the health check — log it loudly).
                 if not data.get("ok"):
+                    desc = data.get("description", "")
+                    print(f"getUpdates not ok: {desc!r}")
+                    if "webhook" in desc.lower():
+                        try:
+                            await client.get(self._url("deleteWebhook"),
+                                             params={"drop_pending_updates": "true"})
+                            print("cleared a stale webhook; resuming polling")
+                        except Exception:  # noqa: BLE001
+                            pass
                     await asyncio.sleep(5)
                     continue
                 for upd in data.get("result", []):
